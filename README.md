@@ -1,6 +1,6 @@
 # Proxmox Kubernetes Cluster
 
-<img width="1641" height="451" alt="image" src="https://github.com/user-attachments/assets/05fe5e8e-dace-4187-bfea-458c1432630c" />
+<img width="1641" height="451" alt="image" src="https://github.com/user-attachments/assets/1732ccd6-e1e2-4941-8331-2fc3826c9b9d" />
 
 This project sets up a 3-node Kubernetes cluster on a Proxmox server:
 
@@ -180,5 +180,6 @@ kubeadm join ip:6443 --token 123 \
 | **k8s_master.yml**  | Master(s)               | - Initialize cluster: `kubeadm init --pod-network-cidr=10.244.0.0/16` <br> - Configure kubeconfig for ubuntu user <br> - Deploy Flannel CNI: `kubectl apply -f kube-flannel.yml` <br> - Generate `kubeadm join` command and save as Ansible fact                                                                                                                                                                                                                                                                                        | Master node up and running: control-plane ready, Flannel network deployed, join command available for workers                             |
 | **k8s_workers.yml** | Worker nodes            | - Fetch `kubeadm join` command from master fact <br> - Execute join command: `kubeadm join ...`                                                                                                                                                                                                                                                                                                                                                                                                                                         | Worker nodes join cluster automatically, cluster ready for workloads                                                                      |
 
-<img width="1052" height="702" alt="image" src="https://github.com/user-attachments/assets/950fe0fd-ee49-49d2-9941-cad78ba9ca9d" />
-<img width="1156" height="371" alt="image" src="https://github.com/user-attachments/assets/cf7fa000-80b9-426c-801f-86dd2990905a" />
+<img width="1052" height="702" alt="image" src="https://github.com/user-attachments/assets/fafdf3cb-b320-47aa-9994-8cf2a17b78d4" />
+<img width="1156" height="371" alt="image" src="https://github.com/user-attachments/assets/c7af1b82-3e52-4cd6-9602-2bcc580641fb" />
+
