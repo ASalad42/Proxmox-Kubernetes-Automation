@@ -1,0 +1,13 @@
+- hosts: workers
+  become: true
+  tasks:
+    - name: Copy join command to worker
+      copy:
+        src: ./join-command.sh
+        dest: /tmp/join-command.sh
+        mode: 0700
+
+    - name: Join node to the cluster
+      command: bash /tmp/join-command.sh
+      args:
+        creates: /etc/kubernetes/kubelet.conf
