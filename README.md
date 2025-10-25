@@ -199,3 +199,8 @@ How They Work Together:
     - Pulls the container image
     - Starts the containers via the container runtime containerd
     - Reports back to the API server with the Pod status (Pending → Running)
+8. When the `kubelet` creates the Pod, it asks the CNI plugin (Flannel) to set up networking.
+     - Result: every Pod in the cluster can talk to every other Pod via a routable Pod IP
+12. `CoreDNS` watches the API server for new Services and updates its internal DNS records - **used to resolve the Service name to an IP.**
+    - Result: `nginx.default.svc.cluster.local` → 10.96.0.37 (ClusterIP).
+    - `kube-proxy` then forwards that traffic to an actual Pod IP via iptables/IPVS.
