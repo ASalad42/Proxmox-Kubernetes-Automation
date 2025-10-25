@@ -183,3 +183,19 @@ kubeadm join ip:6443 --token 123 \
 <img width="1052" height="702" alt="image" src="https://github.com/user-attachments/assets/fafdf3cb-b320-47aa-9994-8cf2a17b78d4" />
 <img width="1156" height="371" alt="image" src="https://github.com/user-attachments/assets/c7af1b82-3e52-4cd6-9602-2bcc580641fb" />
 
+Understanding the Control Plane:
+
+<img width="848" height="621" alt="image" src="https://github.com/user-attachments/assets/a9dcfa73-feee-4e2a-b24b-a384b002242f" />
+
+How They Work Together: 
+
+1. Run `kubectl create deployment nginx`.
+2. `kubectl` sends the request to the `kube-apiserver-k8s-master-1` (Every command (e.g. kubectl get pods) and every internal component talks to the API Server)
+3. The `apiserver` writes the desired state to `etcd-k8s-master-1` (key-value database that stores the entire cluster state)
+4. The `kube-scheduler-k8s-master-1` notices a new Pod with no node assigned and picks a node.
+5. `kube-apiserver` updates etcd with the Pod’s assigned node.
+6. The `kube-controller-manager-k8s-master-1` ensures that the number of Pods matches the Deployment spec.
+7. The `kubelet` on the selected worker node continuously watches the API server for Pods assigned to its node. When it sees one, it:
+    - Pulls the container image
+    - Starts the containers via the container runtime containerd
+    - Reports back to the API server with the Pod status (Pending → Running)
