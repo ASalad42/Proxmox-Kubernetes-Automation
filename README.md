@@ -195,12 +195,25 @@ How They Work Together:
 4. The `kube-scheduler-k8s-master-1` notices a new Pod with no node assigned and picks a node.
 5. `kube-apiserver` updates etcd with the Pod’s assigned node.
 6. The `kube-controller-manager-k8s-master-1` ensures that the number of Pods matches the Deployment spec.
-7. The `kubelet` on the selected worker node continuously watches the API server for Pods assigned to its node. When it sees one, it:
+    - kubectl → contacts the API Server
+    - The API Server → reads from etcd
+    - The Controller Manager → ensures the actual cluster state matches
+8. The `kubelet` on the selected worker node continuously watches the API server for Pods assigned to its node. When it sees one, it:
     - Pulls the container image
     - Starts the containers via the container runtime containerd
     - Reports back to the API server with the Pod status (Pending → Running)
-8. When the `kubelet` creates the Pod, it asks the CNI plugin (Flannel) to set up networking.
+9. When the `kubelet` creates the Pod, it asks the CNI plugin (Flannel) to set up networking.
      - Result: every Pod in the cluster can talk to every other Pod via a routable Pod IP
 12. `CoreDNS` watches the API server for new Services and updates its internal DNS records - **used to resolve the Service name to an IP.**
     - Result: `nginx.default.svc.cluster.local` → 10.96.0.37 (ClusterIP).
     - `kube-proxy` then forwards that traffic to an actual Pod IP via iptables/IPVS.
+
+
+| **Type**               | **Who Manages It**                            | **Description**                                                                |
+| ---------------------- | --------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Deployment**         | Controller Manager → `deployment-controller`  | Ensures the desired number of Pods and ReplicaSets exist.                      |
+| **ReplicaSet**         | Controller Manager → `replicaset-controller`  | Maintains the correct number of identical Pods.                                |
+| **DaemonSet**          | Controller Manager → `daemonset-controller`   | Ensures *one Pod per node* (e.g., for node agents like kube-proxy or flannel). |
+| **StatefulSet**        | Controller Manager → `statefulset-controller` | Manages Pods with stable network identities and persistent storage.            |
+| **Service**            | API Server + kube-proxy                       | Provides stable networking endpoints for Pods.                                 |
+| **ConfigMap / Secret** | API Server                                    | Stores configuration and sensitive data, mounted into Pods at runtime.         |
