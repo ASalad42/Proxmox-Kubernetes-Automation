@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pve-exporter-config
+  namespace: monitoring
+stringData:
+  pve.yml: |
+    default:
+      user: prometheus@pam
+      token_name: "name-of-token"
+      token_value: "supersecrettokenvalue"
+      verify_ssl: false
