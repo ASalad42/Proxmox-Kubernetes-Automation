@@ -3,10 +3,12 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          accessModes: ["ReadWriteOnce"]
+          accessModes:
+            - ReadWriteMany
+          storageClassName: nfs-media
           resources:
             requests:
-              storage: 10Gi
+              storage: 1Gi
     additionalScrapeConfigs:
       - job_name: "pve"
         scrape_interval: 15s
@@ -27,5 +29,14 @@ prometheus:
 grafana:
   persistence:
     enabled: true
-    accessModes: ["ReadWriteOnce"]
+    accessModes:
+      - ReadWriteMany
+    storageClassName: nfs-media
     size: 5Gi
+
+defaultRules:
+  create: false
+
+alertmanager:
+  alertmanagerSpec:
+    configSecret: alertmanager-config
