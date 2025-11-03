@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: radarr
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: radarr
+  template:
+    metadata:
+      labels:
+        app: radarr
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: radarr
+          image: lscr.io/linuxserver/radarr:latest
+          ports:
+            - containerPort: 7878
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet: # httpGet → Kubernetes will make an HTTP GET request to http://<pod-ip>:7878/
+              path: /
+              port: 7878
+            initialDelaySeconds: 60
+            periodSeconds: 30 # Liveness probe checks every 30s — if it fails several times, Kubernetes restarts Radarr.
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 7878
+            initialDelaySeconds: 30
+            periodSeconds: 15 # Readiness probe checks every 15s — when it’s OK, Radarr starts receiving traffic.
+          volumeMounts:
+            - mountPath: /config
+              name: radarr-config
+            - mountPath: /data
+              name: arr-data
+      volumes:
+        - name: radarr-config
+          persistentVolumeClaim:
+            claimName: radarr-config-pvc
+        - name: arr-data
+          persistentVolumeClaim:
+            claimName: arr-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: radarr
+  namespace: homelab
+spec:
+  type: ClusterIP
+  selector:
+    app: radarr
+  ports:
+    - name: webui
+      port: 7878
+      targetPort: 7878
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: radarr-ingress
+  namespace: homelab
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: radarr.homelab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: radarr
+                port:
+                  number: 7878
+    - http:
+        paths:
+          - path: /radarr # Go to Settings → General → URL Base and set to /radarr
+            pathType: Prefix
+            backend:
+              service:
+                name: radarr
+                port:
+                  number: 7878

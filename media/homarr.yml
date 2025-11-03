@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homarr
+  namespace: homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homarr
+  template:
+    metadata:
+      labels:
+        app: homarr
+    spec:
+      containers:
+        - name: homarr
+          image: ghcr.io/ajnart/homarr:latest
+          ports:
+            - containerPort: 7575
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet: 
+              path: /
+              port: 7575
+            initialDelaySeconds: 60
+            periodSeconds: 30 
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 7575
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          volumeMounts:
+            - mountPath: /app/data/configs
+              name: homarr-config
+            - mountPath: /app/public/icons
+              name: homarr-icons
+      volumes:
+        - name: homarr-config
+          persistentVolumeClaim:
+            claimName: homarr-config-pvc
+        - name: homarr-icons
+          persistentVolumeClaim:
+            claimName: homarr-icons-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homarr
+  namespace: homelab
+spec:
+  type: ClusterIP
+  selector:
+    app: homarr
+  ports:
+    - name: webui
+      port: 7575
+      targetPort: 7575
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homarr-ingress
+  namespace: homelab
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: homarr.homelab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homarr
+                port:
+                  number: 7575
+    - http:
+        paths:
+          - path: /homarr
+            pathType: Prefix
+            backend:
+              service:
+                name: homarr
+                port:
+                  number: 7575
+  # tls:
+  # - hosts:
+  #     - homarr.homelab.ayanle.cloud
+  #   secretName: homarr-tls-secret
