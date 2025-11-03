@@ -23,8 +23,8 @@
 
 - `sudo apt update && sudo apt install -y nfs-kernel-server`
 - `sudo mkdir -p /mnt/media`
-- `sudo chown -R nobody:nogroup /mnt/media`
-- `sudo chmod 777 /mnt/media`
+- `sudo chown -R 1000:1000 /mnt/media`
+- `sudo chmod -R 755 /mnt/media`
 - Edit NFS exports file: `sudo nano /etc/exports`
 - Add this line: `/mnt/media ip/24(rw,sync,no_subtree_check,no_root_squash)`
 - `sudo exportfs -ra`
@@ -48,7 +48,9 @@
 - `helm uninstall csi-driver-nfs -n kube-system`
 - `kubectl apply -f nfs-media-sc.yml`
 - `kubectl get storageclass`
-- `kubectl get pv,pvc -n homelab` - new PVs automatically appear with `nfs-media` as their `STORAGECLASS`.
+- `kubectl apply -f data-pvc.yml`
+- `kubectl apply -f config-pvc.yml`
+- `kubectl get pv,pvc -n homelab` - should see new PVs automatically appear with `nfs-media` as their `STORAGECLASS`.
   - PVCs are all Bound meaning dynamic provisioning succeeded
   - PVs were Auto-created and each PVC got its own unique PV (via the NFS CSI driver)
 
