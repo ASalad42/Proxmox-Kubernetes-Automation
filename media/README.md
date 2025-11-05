@@ -1,5 +1,8 @@
 # Media Apps
 
+<img width="948" height="579" alt="image" src="https://github.com/user-attachments/assets/d736da1c-731f-4305-81f1-5e18007fa117" />
+
+
 - `kubectl apply -f radarr.yml`
   - `kubectl exec -it deploy/radarr -n homelab -- bash`
   - `mkdir -p /data/downloads /data/movies /data/tvseries`
