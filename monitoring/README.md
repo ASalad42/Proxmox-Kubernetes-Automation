@@ -1,5 +1,8 @@
 # Setup Cluster Monitroing
 
+<img width="1901" height="873" alt="k8dash" src="https://github.com/user-attachments/assets/755113ad-9c43-4aff-8d8c-8356a09284ac" />
+
+
 - `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts`
 - `helm repo add grafana https://grafana.github.io/helm-charts`
 - `helm repo update`
@@ -31,6 +34,9 @@ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
 - Username: admin and `kubectl get secret prometheus-grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 -d`
 - import 1860 and 15661
 
+<img width="1902" height="841" alt="image" src="https://github.com/user-attachments/assets/109f7596-169e-4e56-8327-e00039b553ef" />
+
+
 Alert Manager:
 
 - Turn off vm to test node down rule
@@ -41,3 +47,5 @@ Alert Manager:
   - rule must carry the same label(s) under metadata.labels.
 - check alert manager config was injected in from secret with `kubectl exec -n monitoring alertmanager-prometheus-kube-prometheus-alertmanager-0 -c alertmanager -- sh -c "cat /etc/alertmanager/config_out/alertmanager.env.yaml"`
 - query `up{job="node-exporter"}`
+
+<img width="1872" height="807" alt="image" src="https://github.com/user-attachments/assets/ff3198d5-38be-4681-968c-90c78fd2d90e" />
