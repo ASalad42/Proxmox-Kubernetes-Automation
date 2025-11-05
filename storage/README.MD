@@ -7,6 +7,7 @@
 - `local-lvm` and `local` are Proxmox-managed storage pools for VM disks and ISOs — not for shared file access between VMs/Nodes.
 - Currently, each VM (master + 2 workers) has its own private virtual disk (32GB) allocated from `local-lvm` on the Proxmox host. These disks are completely isolated block devices.
 - Therefore, need a shared filesystem (like NFS) mounted across all three VMs.
+- NFS (Network File System) is a network protocol that allows multiple systems to mount and access the same filesystem over the network. every read/write made by the pods to that volume is a network operation, not a local disk operation. Instead of storing data locally on a node, each node mounts the NFS share — e.g. /mnt/media — from the Proxmox host via the network
   - Add a new shared NFS mount on the Proxmox host at /mnt/media
   - Mount that NFS share inside each VM (master + workers) at /mnt/media
   - Use the NFS CSI driver + NFS StorageClass
@@ -27,10 +28,11 @@
 - `sudo chmod -R 755 /mnt/media`
 - Edit NFS exports file: `sudo nano /etc/exports`
 - Add this line: `/mnt/media ip/24(rw,sync,no_subtree_check,no_root_squash)`
+- this line tells the NFS server to share the folder /mnt/media with all machines in the 192.xxx.x.x subnet, allow them to read/write, and trust their root users.
 - `sudo exportfs -ra`
 - `sudo systemctl restart nfs-server`
 - `sudo exportfs -v`
-- Do this inside each VM (master + worker1 + worker2)
+- Do this inside each VM (master + worker1 + worker2) to make the nodes mount that network share
   - `sudo apt update && sudo apt install -y nfs-common`
   - `sudo mkdir -p /mnt/media`
   - `sudo cp /etc/fstab /etc/fstab.bak`
@@ -42,11 +44,11 @@
 - On worker1 : `echo "hello from worker1" > /mnt/media/test.txt`
 - On master: `cat /mnt/media/test.txt`
 - `helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts`
-- `helm install csi-driver-nfs csi-driver-nfs/csi-driver-nfs --namespace kube-system --version 4.12.0`
+- `helm install csi-driver-nfs csi-driver-nfs/csi-driver-nfs --namespace kube-system --version 4.12.0` - makes Kubernetes aware of that NFS capability
 - `helm search repo csi-driver-nfs --versions`
 - `kubectl get pods -n kube-system | grep nfs`
 - `helm uninstall csi-driver-nfs -n kube-system`
-- `kubectl apply -f nfs-media-sc.yml`
+- `kubectl apply -f nfs-media-sc.yml` - makes Kubernetes aware of that NFS capability
 - `kubectl get storageclass`
 - `kubectl apply -f data-pvc.yml`
 - `kubectl apply -f config-pvc.yml`
