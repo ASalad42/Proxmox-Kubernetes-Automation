@@ -202,6 +202,9 @@ Pod eth0 (10.244.2.9, Worker2)
 
 ### 🌐 Traefik Ingress
 
+<img width="1748" height="762" alt="tra" src="https://github.com/user-attachments/assets/8c22f9e1-a427-400d-9f0d-e7fd6db5eff2" />
+
+
 - `helm repo add traefik https://traefik.github.io/charts`
 - `helm repo update`
 - `helm install traefik traefik/traefik -f traefik-values.yaml -n kube-system`
@@ -223,6 +226,9 @@ Pod eth0 (10.244.2.9, Worker2)
   - MetalLB’s speaker is broadcasting ARP announcements from k8s-worker-2, meaning any device on local network that requests ip will be routed to that node.
 
 Create an Ingress for app (Radarr example)
+
+<img width="1423" height="666" alt="radarr" src="https://github.com/user-attachments/assets/8f8610e0-c30a-4d61-bbac-f49622b7aab4" />
+
 
 - radarr.homelab.local → points to traefik (via /etc/hosts)
 - ip   radarr.homelab.local qbittorrent.homelab.local jellyfin.homelab.local
