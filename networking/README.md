@@ -140,23 +140,43 @@ Pod eth0 (10.244.2.9, Worker2)
 5. Radarr Pod → responds with the web UI via HTTPS
 
 ```.sh
-
-          🌍 User Browser (radarr.homelab.local)
-                       │
-                       ▼
-              DNS → ip   (MetalLB assigns this IP to Traefik's LoadBalancer Service)
-                       │
-                       ▼
-         🚦 Traefik Ingress Controller (running in cluster)
-                 ├─ Handles TLS (via cert-manager + Let's Encrypt)
-                 ├─ Routes traffic to radarr-service (ClusterIP)
-                 └─ Can do path-based or host-based routing
-                       │
-                       ▼
-             radarr-service → radarr Pod (in homelab namespace)
-                       │
-                       ▼
-                Response flows back the same way
+👩‍💻 User Browser
+    │
+    │ 1️⃣  http://homarr.homelab.local
+    ▼
+🧩 Windows hosts file
+    • Entry: ip homarr.homelab.local
+    │
+    │ 2️⃣ DNS resolution happens locally → Browser connects to ip
+    ▼
+🌐 Traefik LoadBalancer Service (MetalLB)
+    • MetalLB has assigned external IP
+    • Service type: LoadBalancer → forwards port 80 → Traefik Pod(s)
+    │
+    │ 3️⃣ Packet hits Node’s kube-proxy → forwarded to a Traefik Pod
+    ▼
+🚦 Traefik Ingress Controller (Pod in kube-system)
+    • Watches all Ingress objects in the cluster
+    • Finds matching rule:
+          host: homarr.homelab.local
+            → backend: Service homarr (port 7575)
+    │
+    │ 4️⃣ Traefik proxies HTTP request → cluster-internal network
+    ▼
+🔹 homarr Service (ClusterIP)
+    • Type: ClusterIP → virtual IP inside cluster (e.g. 10.107.171.153)
+    • Selects Pods with label app=homarr
+    │
+    │ 5️⃣ kube-proxy routes to one of the matching Homarr Pods
+    ▼
+📦 homarr Pod
+    • Container port 7575 is open
+    • App serves the web UI
+    │
+    │ 6️⃣ Response travels back the same route:
+    ▼
+    homarr Pod → Service → Traefik → Node → Browser
+    (HTTP response content returned to user)
 ```
 
 | Component     | Purpose                  |
@@ -196,6 +216,7 @@ Pod eth0 (10.244.2.9, Worker2)
   - Attach Middleware to the Dashboard IngressRoute in traefik-values.yaml
   - `helm upgrade traefik traefik/traefik -f traefik-values.yaml -n kube-system`
   - very with `kubectl get ingressroute -n kube-system` and `kubectl describe ingressroute traefik-dashboard -n kube-system`
+  - `kubectl get crds | grep traefik`
   - Access within login prompt
 - `kubectl describe svc traefik -n kube-system` shows that MetalLB assigned this IP from the homelab-pool defined in metallb-config.yaml to the Traefik service.
   - MetalLB’s controller successfully allocated the IP

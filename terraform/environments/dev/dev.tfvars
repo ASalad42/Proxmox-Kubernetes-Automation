@@ -40,5 +40,14 @@ workers = {
     sockets   = 1
     memory_mb = 4096
   }
+
+  worker3 = {
+    name      = "minIO-storage"
+    vmid      = 112
+    ip        = "ip"
+    cores     = 1
+    sockets   = 1
+    memory_mb = 4096
+  }
 }
 

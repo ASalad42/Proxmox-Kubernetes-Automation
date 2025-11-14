@@ -1,11 +1,11 @@
 ports:
   web:
-    port: 80
+    port: 8000 # web now listens on 8000 and websecure on 8443 inside the Traefik pod.
     redirections:
       entryPoint:
         to: websecure
   websecure:
-    port: 443
+    port: 8443
 
 ingressRoute:
   dashboard:
@@ -21,3 +21,12 @@ service:
   type: LoadBalancer
   spec:
     loadBalancerIP: ip # That tells MetalLB to use ip for this LoadBalancer service.
+    ports:
+      - name: web
+        port: 80           # expose port 80 externally
+        targetPort: 8000   # maps to web entryPoint inside Traefik
+        protocol: TCP
+      - name: websecure
+        port: 443          # expose port 443 externally
+        targetPort: 8443   # maps to websecure entryPoint inside Traefik
+        protocol: TCP

@@ -1,0 +1,28 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: kubernetes-dashboard # Role only applies inside the kubernetes-dashboard namespace.
+  name: dashboard-read-only-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "secrets", "deployments", "replicasets", "pods/log"]
+  verbs: ["get", "list", "watch"] # explicitly lists allowed actions
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dashboard-read-only-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dashboard-read-only-role-binding
+  namespace: kubernetes-dashboard
+subjects:
+- kind: ServiceAccount
+  name: dashboard-read-only-sa
+  apiGroup: ""
+roleRef:
+  kind: Role
+  name: dashboard-read-only-role
+  apiGroup: ""
