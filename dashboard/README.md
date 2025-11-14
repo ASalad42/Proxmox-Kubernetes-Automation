@@ -1,5 +1,8 @@
 # Kubernetes Dashboard
 
+<img width="1745" height="890" alt="k8" src="https://github.com/user-attachments/assets/e16bdf43-4a30-494c-9a65-3525d8e99d17" />
+
+
 The Kubernetess Dashboard is a web-based user interface (UI) that serves as a visual tool to help users manage and monitor their K8s clusters and workloads running on them
 
 - `helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/`
