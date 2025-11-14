@@ -30,7 +30,7 @@ Flow: Browser → Traefik → Kong proxy → Dashboard (web + api + auth)
 | `kubernetes-dashboard-metrics-scraper` | 8000 | Collects cluster metrics for display in the dashboard.                                                      |
 
 - `kubectl apply -f read-only.yml`
-- Adjust the RBAC (role-based access control.) rules in the read-only-role.yml file if you need to customize the permissions further
+- Adjust the RBAC (role-based access control) rules in the read-only-role.yml file if you need to customize the permissions further
 
 | Feature          | **account.yml**                                                         | **read-only.yml**                                                                |
 | ---------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
