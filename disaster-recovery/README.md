@@ -34,6 +34,9 @@ Make sure:
 - They keep static IPs after restore
 - This ensures etcd consistency.
 
+<img width="1531" height="347" alt="prox" src="https://github.com/user-attachments/assets/59c82f5b-3b86-4f25-8dc9-ce9a5c21a802" />
+
+
 ## Velero: Backup Kubernetes Cluster State
 
 ```.sh
@@ -97,11 +100,14 @@ EOF
   - `sudo systemctl status minio`
   - API → `http://<minio-vm-ip>:9000`
   - Web Console → `http://<minio-vm-ip>:33619`
+ 
+ <img width="1742" height="431" alt="image" src="https://github.com/user-attachments/assets/427ac380-8b59-4f9e-8694-01e9e965c152" />
+
 
 ### PART 2 Create MinIO Bucket, User, and Access Keys
 
 - Log into MinIO console
-- Create a Bucket and name it velero, Create a Service Account for Velero and attach policy, generate Access Key / Secret Key for this user.
+- Create a Bucket and name it velero
 
 ### PART 3 Setup Velero
 
@@ -145,6 +151,9 @@ velero install \
 - `velero get backups`
 - `velero backup describe full-cluster-backup --details`
 - In MinIO GUI → Bucket velero → will see backup files.
+
+<img width="1708" height="787" alt="velero" src="https://github.com/user-attachments/assets/8bdd96c9-104d-4e80-850c-519ad29e3ac3" />
+
 
 ## Disaster Recovery Process (Full Cluster Restore)
 
