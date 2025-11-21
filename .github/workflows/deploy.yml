@@ -1,0 +1,116 @@
+name: Build & Push to Docker Hub
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/backend/**'
+      - 'apps/frontend/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install backend deps
+        working-directory: apps/backend
+        run: npm install
+
+      - name: Install frontend deps
+        working-directory: apps/frontend
+        run: npm install
+
+      - name: Trivy scan backend filesystem
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: './apps/backend'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          scanners: 'vuln,secret'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Trivy scan frontend filesystem
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: './apps/frontend'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          scanners: 'vuln,secret'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Determine Docker Tag
+        id: vars
+        run: echo "TAG=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build backend image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/backend:${{ steps.vars.outputs.TAG }} ./apps/backend
+
+      - name: Trivy scan backend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/backend:${{ steps.vars.outputs.TAG }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push backend image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend:${{ steps.vars.outputs.TAG }}
+
+      - name: Build frontend image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ steps.vars.outputs.TAG }} ./apps/frontend
+
+      - name: Trivy scan frontend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ steps.vars.outputs.TAG }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push frontend image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ steps.vars.outputs.TAG }}
+
+      - name: Update backend manifest tag
+        run: |
+          sed -i "s|image: .*/backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/backend:${{ steps.vars.outputs.TAG }}|" apps/k8s-manifests/backend.yaml
+
+      - name: Update frontend manifest tag
+        run: |
+          sed -i "s|image: .*/frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ steps.vars.outputs.TAG }}|" apps/k8s-manifests/frontend.yml
+
+      - name: Commit manifest updates
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add apps/k8s-manifests/backend.yaml apps/k8s-manifests/frontend.yml
+          git commit -m "Update image tags to ${{ github.sha }}" || echo "No changes to commit"
+          git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/ASalad42/homelab-k8.git
+          git push origin main

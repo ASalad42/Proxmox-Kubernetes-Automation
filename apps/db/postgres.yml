@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: homelab
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates: # For each pod in this StatefulSet, automatically create a dedicated PVC based on this template.
+    - metadata:
+        name: postgres-data # Each PVC is unique and persistent for that pod, and they’re automatically reattached if the pod restarts.
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: "nfs-media"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: homelab
+  labels:
+    app: postgres
+spec:
+  clusterIP: None  # headless service for stable DNS
+  ports:
+    - port: 5432
+  selector:
+    app: postgres
+
+# PVC name is Dynamic (postgres-data-postgres-0, etc.)

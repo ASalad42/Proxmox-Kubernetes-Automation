@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: initial-message
+  namespace: homelab
+spec:
+  template:
+    spec:
+      containers:
+        - name: add-message
+          image: postgres:15
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          command: ["psql"]
+          args:
+            - "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres.homelab.svc.cluster.local:5432/$(POSTGRES_DB)"
+            - "-c"
+            - |
+              CREATE TABLE IF NOT EXISTS messages (
+                id SERIAL PRIMARY KEY,
+                content TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );
+              INSERT INTO messages (content) VALUES ('Hello from Kubernetes Job!');
+      restartPolicy: Never
+  backoffLimit: 3

@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: web-auth-secret
+  namespace: argocd
+type: Opaque
+data:
+  users: |
+    secret
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: web-auth
+  namespace: argocd
+spec:
+  basicAuth:
+    secret: web-auth-secret
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-http
+  namespace: argocd
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`argo.homelab.local`) && PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: argocd-server
+          port: 8080
+          scheme: http 
+      middlewares:
+        - name: web-auth

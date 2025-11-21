@@ -41,7 +41,7 @@ workers = {
     memory_mb = 4096
   }
 
-  worker3 = {
+  minio = {
     name      = "minIO-storage"
     vmid      = 112
     ip        = "ip"
@@ -49,5 +49,21 @@ workers = {
     sockets   = 1
     memory_mb = 4096
   }
-}
 
+  docker = {
+    name      = "docker-host"
+    vmid      = 121
+    ip        = "ip"
+    cores     = 2
+    sockets   = 1
+    memory_mb = 4096
+  }
+  gitlab = {
+    name      = "gitlab-ce"
+    vmid      = 130
+    ip        = "ip"
+    cores     = 4
+    sockets   = 1
+    memory_mb = 8192
+  }
+}

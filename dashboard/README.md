@@ -2,7 +2,6 @@
 
 <img width="1745" height="890" alt="k8" src="https://github.com/user-attachments/assets/e16bdf43-4a30-494c-9a65-3525d8e99d17" />
 
-
 The Kubernetess Dashboard is a web-based user interface (UI) that serves as a visual tool to help users manage and monitor their K8s clusters and workloads running on them
 
 - `helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/`
@@ -37,12 +36,18 @@ Flow: Browser → Traefik → Kong proxy → Dashboard (web + api + auth)
 
 | Feature          | **account.yml**                                                         | **read-only.yml**                                                                |
 | ---------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **Scope**        | **Cluster-wide** (via `ClusterRoleBinding` + `cluster-admin`)           | **Namespace-limited** (via `Role` + `RoleBinding`)                              |
+| **Scope**        | **Cluster-wide** (via `ClusterRole` + `ClusterRoleBinding`)             | **Namespace-limited** (via `Role` + `RoleBinding`)                              |
 | **Access level** | Full control — can create, update, delete any resource in any namespace | Read-only — can only view or list specific resource types in a single namespace |
 | **RBAC Kind**    | `ClusterRoleBinding` → applies to the *entire cluster*                  | `RoleBinding` → applies only to one namespace                                   |
 | **Role used**    | Built-in `cluster-admin` ClusterRole                                    | Custom Role `dashboard-read-only-role`                                          |
 | **Use case**     | Administrator or DevOps engineer                                        | Developer or Viewer who should only inspect resources                           |
 | **Risk level**   | 🚨 High — can delete the cluster                                        | 🛡️ Safe — cannot change anything                                               |
+
+| Component                            | Role                                                |
+| ------------------------------------ | --------------------------------------------------- |
+| **ServiceAccount**                   | Identity used by the pod to talk to the API server. |
+| **ClusterRole / Role**               | Defines what permissions are allowed.               |
+| **ClusterRoleBinding / RoleBinding** | Attaches the role to a ServiceAccount (or user).    |
 
 Ingress:
 
