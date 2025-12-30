@@ -1,0 +1,52 @@
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - TZ=Europe/London
+    network_mode: host 
+    volumes:
+      - ./homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - mqtt
+      - homeassistant-db
+
+  frigate:
+    image: ghcr.io/blakeblackshear/frigate:stable
+    container_name: frigate
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    volumes:
+      - ./frigate/config.yml:/config/config.yml
+      - ./storage/recordings:/media/frigate
+    ports:
+      - "5000:5000"
+      - "8554:8554" # RTSP feeds
+    environment:
+      - FRIGATE_RTSP_PASSWORD=supersecretpassword
+
+  homeassistant-db:
+    image: docker.io/postgres:16.3
+    container_name: homeassistant-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=homeassistant_user
+      - POSTGRES_PASSWORD=xF2odDFSjd3DFsl0ZgfQsjnd55yH
+      - POSTGRES_DB=homeassistant-db
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/data:/var/lib/postgresql/data  
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - homelab_net
+
+networks:
+  homelab_net:
+    driver: bridge

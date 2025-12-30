@@ -1,0 +1,43 @@
+mqtt:
+  enabled: false
+
+ffmpeg:
+  input_args: preset-rtsp-generic
+
+objects:
+  track:
+    - person
+    - dog
+
+record:
+  enabled: true
+  retain:
+    days: 7        # Keep all recordings for 7 days
+    mode: motion   # Only record when motion detected
+  
+
+cameras:
+  outside_cam:
+    ffmpeg:
+      inputs:
+        - path: rtsp://admin:admin123@192.168.1.65:554/live/ch00_1
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      width: 896
+      height: 512
+      fps: 5
+    record:
+      enabled: true
+      alerts:
+        retain:
+          days: 14
+        pre_capture: 5
+        post_capture: 5
+      detections:
+        retain:
+          days: 7
+        pre_capture: 3
+        post_capture: 3

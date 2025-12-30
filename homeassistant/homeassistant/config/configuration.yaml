@@ -1,0 +1,14 @@
+default_config:
+
+homeassistant:
+  name: !secret home_name
+  latitude: !secret latitude
+  longitude: !secret longitude
+  unit_system: !secret unit_system
+  time_zone: Europe/London 
+
+recorder:
+  db_url: !secret database_url
+  purge_keep_days: 7
+
+automation: !include automations.yaml
