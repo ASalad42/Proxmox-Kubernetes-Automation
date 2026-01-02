@@ -1,0 +1,16 @@
+- alias: "Notify when person detected by Frigate"
+  description: "When Frigate detects a person on the outdoor camera, notify."
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.outside_cam_person
+      to: 'on'
+  condition:
+    - condition: time
+      after: "18:00:00"   # Only after sunset
+      before: "06:00:00"  # Only before sunrise
+  action:
+    - service: notify.mobile_app_device_id
+      data:
+        message: "Person detected by outdoor camera"
+        title: "Warning"
+  mode: single

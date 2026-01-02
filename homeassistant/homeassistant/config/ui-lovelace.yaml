@@ -1,0 +1,32 @@
+title: Camera Dashboard
+
+views:
+  - title: Outdoor Camera
+    path: outdoor
+    icon: mdi:cctv
+    cards:
+
+      - type: picture-entity
+        entity: camera.outside_cam
+        name: Live Camera
+        camera_view: live
+
+      - type: picture-entity
+        entity: image.outside_cam_person
+        name: Last Person Detected
+
+      - type: entities
+        title: Frigate Controls
+        show_header_toggle: false
+        entities:
+          - switch.outside_cam_detect
+          - switch.outside_cam_recordings
+          - switch.outside_cam_snapshots
+
+      - type: history-graph
+        title: Person Detection (24h)
+        hours_to_show: 24
+        refresh_interval: 10
+        entities:
+          - entity: binary_sensor.outside_cam_person
+            name: Person

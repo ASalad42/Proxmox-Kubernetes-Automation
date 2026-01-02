@@ -12,3 +12,6 @@ recorder:
   purge_keep_days: 7
 
 automation: !include automations.yaml
+
+lovelace:
+  mode: yaml

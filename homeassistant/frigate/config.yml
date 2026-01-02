@@ -1,13 +1,15 @@
 mqtt:
-  enabled: false
+  enabled: true
+  host: 127.0.0.1
+  port: 1883
+  topic_prefix: frigate
 
 ffmpeg:
-  input_args: preset-rtsp-generic
+  hwaccel_args: preset-vaapi # Decode RTSP streams using Intel Quick Sync (VAAPI). Fall back to software if a codec isn’t supported
 
 objects:
   track:
     - person
-    - dog
 
 record:
   enabled: true

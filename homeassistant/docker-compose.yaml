@@ -1,4 +1,14 @@
 services:
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: mqtt
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./mqtt/config:/mosquitto/config
+      - ./mqtt/data:/mosquitto/data
+      - ./mqtt/log:/mosquitto/log
+
   homeassistant:
     image: ghcr.io/home-assistant/home-assistant:stable
     container_name: homeassistant
@@ -20,14 +30,40 @@ services:
     restart: unless-stopped
     privileged: true
     network_mode: host
+    shm_size: "512mb"
+    devices:
+      - /dev/dri:/dev/dri # Passes through Intel GPU for VAAPI hardware acceleration
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ./frigate/config.yml:/config/config.yml
       - ./storage/recordings:/media/frigate
+      - type: tmpfs
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
     ports:
       - "5000:5000"
       - "8554:8554" # RTSP feeds
     environment:
       - FRIGATE_RTSP_PASSWORD=supersecretpassword
+    depends_on:
+      - mqtt
+  
+  tailscale:
+    image: tailscale/tailscale:stable
+    container_name: tailscale
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    volumes:
+      - ./tailscale/state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun # VPN tunnel
+    environment:
+      - TS_AUTHKEY=supersecrettailscaleauthkey
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_HOSTNAME=homelab-ha
 
   homeassistant-db:
     image: docker.io/postgres:16.3
@@ -46,6 +82,10 @@ services:
       - no-new-privileges:true
     networks:
       - homelab_net
+
+volumes:
+  mqtt_data:
+  mqtt_log:
 
 networks:
   homelab_net:
